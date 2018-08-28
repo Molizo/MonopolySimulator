@@ -7,7 +7,7 @@ namespace MonopolySimulator
 {
     public class Property
     {
-        public string id { set; get; }
+        public int id { set; get; }
         public string name { set; get; }
         public string type { set; get; }
         public string payout { set; get; }
@@ -25,13 +25,25 @@ namespace MonopolySimulator
             showTitle();
             readInput();
             readBoardConfig();
-            while (true)
+            for (ulong i = 0; i < requiredGames; i++)
             {
                 playGame(requiredTurns);
             }
 
             Console.WriteLine("\n\nProgram terminated...");
             Console.Read();
+        }
+
+        private static int getJailId()
+        {
+            foreach (Property property in boardProperties)
+            {
+                if (property.type == "Jail")
+                {
+                    return property.id;
+                }
+            }
+            return 0;
         }
 
         private static void playGame(ulong turns)
@@ -46,8 +58,17 @@ namespace MonopolySimulator
                 if (dice1Results != dice2Results)
                 {
                     position += dice1Results + dice2Results;
-                    position = position % (boardProperties.Count + 1);
-                    Console.WriteLine("Advanced to {0}", position);
+                    position = position % (boardProperties.Count);
+                    Console.WriteLine("Advanced to {0} , {1}", position, boardProperties[position].name);
+                    if (boardProperties[position].type == "GotoJail" && getJailId() != 0)
+                    {
+                        Console.WriteLine("Going to jail!");
+                        position = getJailId();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Double Roll!");
                 }
             }
         }
@@ -69,9 +90,9 @@ namespace MonopolySimulator
                     {
                         Property inputProperty = new Property
                         {
-                            id = worksheet.Cells[currentRow, 1].Text
+                            id = Convert.ToInt32(worksheet.Cells[currentRow, 1].Text)
                         };
-                        if (inputProperty.id == "END")
+                        if (worksheet.Cells[currentRow, 1].Text == "END")
                         {
                             break;
                         }
