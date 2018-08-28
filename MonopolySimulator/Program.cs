@@ -18,16 +18,38 @@ namespace MonopolySimulator
         private static List<Property> boardProperties = new List<Property>();
         private static List<string> communityCards = new List<string>();
         private static List<string> chanceCards = new List<string>();
-        private static ulong turns = 0, games = 0;
+        private static ulong requiredTurns = 0, requiredGames = 0;
 
         private static void Main(string[] args)
         {
             showTitle();
             readInput();
             readBoardConfig();
+            while (true)
+            {
+                playGame(requiredTurns);
+            }
 
-            Console.WriteLine("Program terminated...");
+            Console.WriteLine("\n\nProgram terminated...");
             Console.Read();
+        }
+
+        private static void playGame(ulong turns)
+        {
+            Random dice = new Random();
+            int position = 1;
+            for (ulong i = 0; i < turns; i++)
+            {
+                int dice1Results = dice.Next(1, 6);
+                int dice2Results = (dice.Next(7, 12) - dice1Results) * dice.Next(400, 1300) / dice.Next(400, 1300) % dice.Next(1, 6);
+                Console.WriteLine("Rolled {0} and {1}", dice1Results, dice2Results);
+                if (dice1Results != dice2Results)
+                {
+                    position += dice1Results + dice2Results;
+                    position = position % (boardProperties.Count + 1);
+                    Console.WriteLine("Advanced to {0}", position);
+                }
+            }
         }
 
         private static void readBoardConfig()
@@ -105,9 +127,9 @@ namespace MonopolySimulator
                 try
                 {
                     Console.Write("Please enter the number of player turns per game: ");
-                    turns = Convert.ToUInt64(Console.ReadLine());
+                    requiredTurns = Convert.ToUInt64(Console.ReadLine());
                     Console.Write("Please enter the number of games: ");
-                    games = Convert.ToUInt64(Console.ReadLine());
+                    requiredGames = Convert.ToUInt64(Console.ReadLine());
                     validInput = true;
                 }
                 catch
