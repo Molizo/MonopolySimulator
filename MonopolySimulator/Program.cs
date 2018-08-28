@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace MonopolySimulator
 {
@@ -11,6 +12,7 @@ namespace MonopolySimulator
         public string name { set; get; }
         public string type { set; get; }
         public string payout { set; get; }
+        public long landTimes { set; get; }
     }
 
     internal class Program
@@ -22,13 +24,16 @@ namespace MonopolySimulator
 
         private static void Main(string[] args)
         {
+            System.Console.Title = "Monopoly game simulator - Configuration";
             showTitle();
             readInput();
             readBoardConfig();
             for (ulong i = 0; i < requiredGames; i++)
             {
-                playGame(requiredTurns);
+                playGame(requiredTurns, i);
             }
+
+            showResults();
 
             Console.WriteLine("\n\nProgram terminated...");
             Console.Read();
@@ -46,12 +51,14 @@ namespace MonopolySimulator
             return 0;
         }
 
-        private static void playGame(ulong turns)
+        private static void playGame(ulong turns, ulong currentGame)
         {
             Random dice = new Random();
             int position = 1;
             for (ulong i = 0; i < turns; i++)
             {
+                ulong percentageComplete = ((currentGame - 1) * requiredTurns + turns) * 100 / (requiredGames * requiredTurns) + 1;
+                System.Console.Title = "Monopoly game simulator - Playing turn " + i + " in game " + currentGame + " - " + percentageComplete + "% Complete";
                 int dice1Results = dice.Next(1, 6);
                 int dice2Results = (dice.Next(7, 12) - dice1Results) * dice.Next(400, 1300) / dice.Next(400, 1300) % dice.Next(1, 6);
                 Console.WriteLine("Rolled {0} and {1}", dice1Results, dice2Results);
@@ -60,6 +67,7 @@ namespace MonopolySimulator
                     position += dice1Results + dice2Results;
                     position = position % (boardProperties.Count);
                     Console.WriteLine("Advanced to {0} , {1}", position, boardProperties[position].name);
+                    boardProperties[position].landTimes++;
                     if (boardProperties[position].type == "GotoJail" && getJailId() != 0)
                     {
                         Console.WriteLine("Going to jail!");
@@ -70,6 +78,21 @@ namespace MonopolySimulator
                 {
                     Console.WriteLine("Double Roll!");
                 }
+            }
+        }
+
+        private static void showResults()
+        {
+            string resultsText = "\n\n\n+-------------------------------------------------------+\n" +
+                                       "| Results from the " + requiredGames + " Monopoly games                     |\n" +
+                                       "|                                                       |\n" +
+                                       "| Visits   Name of property                             |\n" +
+                                       "+-------------------------------------------------------+\n";
+            Console.WriteLine(resultsText);
+            List<Property> sortedBoardProperties = boardProperties.OrderByDescending(o => o.landTimes).ToList();
+            foreach (Property property in sortedBoardProperties)
+            {
+                Console.WriteLine("{0}       {1}", property.landTimes, property.name);
             }
         }
 
@@ -100,6 +123,7 @@ namespace MonopolySimulator
                         inputProperty.name = worksheet.Cells[currentRow, 2].Text;
                         inputProperty.type = worksheet.Cells[currentRow, 3].Text;
                         inputProperty.payout = worksheet.Cells[currentRow, 4].Text;
+                        inputProperty.landTimes = 0;
                         boardProperties.Add(inputProperty);
                         Console.WriteLine(inputProperty.id + " " + inputProperty.name + " " + inputProperty.type + " " + inputProperty.payout);
                         currentRow++;
