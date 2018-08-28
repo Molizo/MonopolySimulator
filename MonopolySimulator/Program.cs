@@ -15,7 +15,9 @@ namespace MonopolySimulator
 
     internal class Program
     {
-        private static readonly List<Property> boardPropertys = new List<Property>();
+        private static List<Property> boardProperties = new List<Property>();
+        private static List<string> communityCards = new List<string>();
+        private static List<string> chanceCards = new List<string>();
         private static ulong turns = 0, games = 0;
 
         private static void Main(string[] args)
@@ -31,31 +33,61 @@ namespace MonopolySimulator
         private static void readBoardConfig()
         {
             Console.WriteLine();
-            Console.WriteLine("Reading configuration file: ");
-            Console.WriteLine("Properties:");
+            Console.WriteLine("Reading configuration file...");
             try
             {
                 FileInfo fi = new FileInfo(@".\boardConfig.xlsx");
                 using (ExcelPackage workbook = new ExcelPackage(fi))
                 {
-                    ExcelWorksheet worksheet = workbook.Workbook.Worksheets["Properties"];
-                    int currentProperty = 2;
+                    ExcelWorksheet worksheet = workbook.Workbook.Worksheets["Config"];
+
+                    Console.WriteLine("\n\nProperties: ");
+                    int currentRow = 2;
                     while (true)
                     {
                         Property inputProperty = new Property
                         {
-                            id = worksheet.Cells[currentProperty, 1].Text
+                            id = worksheet.Cells[currentRow, 1].Text
                         };
                         if (inputProperty.id == "END")
                         {
                             break;
                         }
 
-                        inputProperty.name = worksheet.Cells[currentProperty, 2].Text;
-                        inputProperty.type = worksheet.Cells[currentProperty, 3].Text;
-                        inputProperty.payout = worksheet.Cells[currentProperty, 4].Text;
+                        inputProperty.name = worksheet.Cells[currentRow, 2].Text;
+                        inputProperty.type = worksheet.Cells[currentRow, 3].Text;
+                        inputProperty.payout = worksheet.Cells[currentRow, 4].Text;
+                        boardProperties.Add(inputProperty);
                         Console.WriteLine(inputProperty.id + " " + inputProperty.name + " " + inputProperty.type + " " + inputProperty.payout);
-                        currentProperty++;
+                        currentRow++;
+                    }
+
+                    Console.WriteLine("\n\nCommunity cards: ");
+                    currentRow = 2;
+                    while (true)
+                    {
+                        if (worksheet.Cells[currentRow, 7].Text == "END")
+                        {
+                            break;
+                        }
+
+                        communityCards.Add(worksheet.Cells[currentRow, 7].Text);
+                        Console.WriteLine(communityCards[currentRow - 2]);
+                        currentRow++;
+                    }
+
+                    Console.WriteLine("\n\nChance cards: ");
+                    currentRow = 2;
+                    while (true)
+                    {
+                        if (worksheet.Cells[currentRow, 8].Text == "END")
+                        {
+                            break;
+                        }
+
+                        chanceCards.Add(worksheet.Cells[currentRow, 8].Text);
+                        Console.WriteLine(chanceCards[currentRow - 2]);
+                        currentRow++;
                     }
                 }
             }
@@ -92,7 +124,7 @@ namespace MonopolySimulator
                            "|  Monopoly Turn Simulator by Visoiu Mihnea Theodor     |" + System.Environment.NewLine +
                            "|                                                       |" + System.Environment.NewLine +
                            "|  This program simulates the turns made by a Monopoly  |" + System.Environment.NewLine +
-                           "|  player in order to find the most visited Property    |" + System.Environment.NewLine +
+                           "|  player in order to find the most visited property    |" + System.Environment.NewLine +
                            "|                                                       |" + System.Environment.NewLine +
                            "|  The developer is not associated with Hasbro Ent.     |" + System.Environment.NewLine +
                            "+-------------------------------------------------------+";
