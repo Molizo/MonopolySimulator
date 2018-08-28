@@ -57,26 +57,32 @@ namespace MonopolySimulator
             int position = 1;
             for (ulong i = 0; i < turns; i++)
             {
-                ulong percentageComplete = ((currentGame - 1) * requiredTurns + turns) * 100 / (requiredGames * requiredTurns) + 1;
-                System.Console.Title = "Monopoly game simulator - Playing turn " + i + " in game " + currentGame + " - " + percentageComplete + "% Complete";
-                int dice1Results = dice.Next(1, 6);
-                int dice2Results = (dice.Next(7, 12) - dice1Results) * dice.Next(400, 1300) / dice.Next(400, 1300) % dice.Next(1, 6);
-                Console.WriteLine("Rolled {0} and {1}", dice1Results, dice2Results);
-                if (dice1Results != dice2Results)
+                try
                 {
-                    position += dice1Results + dice2Results;
-                    position = position % (boardProperties.Count);
-                    Console.WriteLine("Advanced to {0} , {1}", position, boardProperties[position].name);
-                    boardProperties[position].landTimes++;
-                    if (boardProperties[position].type == "GotoJail" && getJailId() != 0)
+                    System.Console.Title = "Monopoly game simulator - Playing turn " + i + " in game " + currentGame;
+                    int dice1Results = dice.Next(1, 6);
+                    int dice2Results = (dice.Next(7, 12) - dice1Results) * dice.Next(400, 1300) / dice.Next(400, 1300) % dice.Next(1, 6);
+                    Console.WriteLine("Rolled {0} and {1}", dice1Results, dice2Results);
+                    if (dice1Results != dice2Results)
                     {
-                        Console.WriteLine("Going to jail!");
-                        position = getJailId();
+                        position += dice1Results + dice2Results;
+                        position = position % (boardProperties.Count);
+                        Console.WriteLine("Advanced to {0} , {1}", position, boardProperties[position].name);
+                        boardProperties[position].landTimes++;
+                        if (boardProperties[position].type == "GotoJail" && getJailId() != 0)
+                        {
+                            Console.WriteLine("Going to jail!");
+                            position = getJailId();
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Double Roll!");
                     }
                 }
-                else
+                catch
                 {
-                    Console.WriteLine("Double Roll!");
+                    Console.WriteLine("An unexpected error has occured.");
                 }
             }
         }
